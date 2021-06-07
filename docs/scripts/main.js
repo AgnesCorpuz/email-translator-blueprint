@@ -1,5 +1,4 @@
 import view from './view.js';
-import controller from './notifications-controller.js';
 import translate from './translate-service.js';
 import config from './config.js';
 
@@ -8,100 +7,37 @@ const platformClient = require('platformClient');
 const client = platformClient.ApiClient.instance;
 
 // API instances
-const usersApi = new platformClient.UsersApi();
 const conversationsApi = new platformClient.ConversationsApi();
-const responseManagementApi = new platformClient.ResponseManagementApi();
-
-let userId = '';
-let agentName = 'AGENT_NAME';
-let agentAlias = 'AGENT_ALIAS';
-let customerName = 'CUSTOMER_NAME';
-let currentConversation = null;
 let currentConversationId = '';
 let translationData = null;
 let genesysCloudLanguage = 'en-us';
-let translateKey = '';
 let messageId = '';
+let customerEmail = '';
+let customerName = '';
+let agentEmail = '';
+let agentName = '';
+let subject = '';
 
-/**
- * Callback function for 'message' and 'typing-indicator' events.
- * 
- * @param {Object} data the event data  
- */
-let onMessage = (data) => {
-    switch(data.metadata.type){
-        case 'typing-indicator':
-            break;
-        case 'message':
+function getEmailDetails(data){
+    let emailBody = data.textBody;
 
-            console.log('ON MESSAGE: ' + JSON.stringify(data));
+    // Get email details
+    customerEmail = data.from.email;
+    customerName = data.from.name;
+    agentEmail  = data.to[0].email;
+    agentName = data.to[0].name;
+    subject = data.subject;
 
-            // Values from the event
-            let eventBody = data.eventBody;
-            let message = eventBody.body;
-            let senderId = eventBody.sender.id;
+    translate.translateText(emailBody, genesysCloudLanguage, function(translatedData) {
+        console.log('TRANSLATED DATA: ' + JSON.stringify(translatedData));
 
-            // Conversation values for cross reference
-            let participant = currentConversation.participants.find(p => p.chats[0].id == senderId);
-            let name = participant.name;
-            let purpose = participant.purpose;
-
-            // Wait for translate to finish before calling addChatMessage
-            translate.translateText(message, genesysCloudLanguage, function(translatedData) {
-                view.addChatMessage(name, translatedData.translated_text, purpose);
-                translationData = translatedData;
-            });
-
-            break;
-    }
-};
-
-/**
- *  Translate then send message to the customer
- */
-function sendChat(){
-    let message = document.getElementById('message-textarea').value;
-
-    // Get the last agent participant, this also fixes an issue when an agent
-    // gets reconnected and reassigned a new participant id.
-    let agentsArr = currentConversation.participants.filter(p => p.purpose == 'agent');
-    let agent = agentsArr[agentsArr.length - 1];
-    let communicationId = agent.chats[0].id;
-
-    let sourceLang;
-
-    // Default language to english if no source_language available    
-    if(translationData === null) {
-        sourceLang = 'en';
-    } else {
-        sourceLang = translationData.source_language;
-    }
-
-    // Translate text to customer's local language
-    translate.translateText(message, sourceLang, function(translatedData) {
-        // Wait for translate to finish before calling sendMessage
-        sendMessage(translatedData.translated_text, currentConversationId, communicationId);
+        view.addMessage(translatedData.translated_text, 'customer');
+        translationData = translatedData;
     });
-
-    document.getElementById('message-textarea').value = '';
-};
-
-/**
- *  Send message to the customer
- */
-function sendMessage(message, conversationId, communicationId){
-    console.log(message);
-    conversationsApi.postConversationsChatCommunicationMessages(
-        conversationId, communicationId,
-        {
-            'body': message,
-            'bodyType': 'standard'
-        }
-    )
 }
 
-function getEmailBody(body){
-    let emailBody = body.textBody;
+function translateMessage(){
+    let message = document.getElementById('message-textarea').value;
     let sourceLang;
 
     // Default language to english if no source_language available    
@@ -111,24 +47,57 @@ function getEmailBody(body){
         sourceLang = translationData.source_language;
     }
 
-    translate.translateText(emailBody, sourceLang, function(translatedData) {
+    translate.translateText(message, sourceLang, function(translatedData) {
         console.log('TRANSLATED DATA: ' + JSON.stringify(translatedData));
+
+        view.addMessage(translatedData.translated_text, 'agent');
+
+        // Send email
+        sendMessage(translatedData.translated_text, () => {
+            console.log('EMAIL SENT');
+        });
+
+        // Copy to clipboard
+        // copyToClipboard(translatedData.translated_text);
     });
+}
+
+function sendMessage(message){
+    let body = {
+        'to': [{
+            'email': customerEmail,
+            'name': customerName
+        }],
+        'from': {
+            'email': agentEmail,
+            'name': agentName
+        },
+        'subject': subject,
+        'textBody': message,
+        'historyIncluded': true
+    }
+
+    conversationsApi.postConversationsEmailMessages(currentConversationId, body);
+}
+
+function copyToClipboard(message){
+    var dummy = document.createElement("textarea");
+    document.body.appendChild(dummy);
+    dummy.value = message;
+    dummy.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummy);
 }
 
 /** --------------------------------------------------------------
  *                       EVENT HANDLERS
  * -------------------------------------------------------------- */
-document.getElementById('chat-form')
-    .addEventListener('submit', () => sendChat());
-
-document.getElementById('btn-send-message')
-    .addEventListener('click', () => sendChat());
-
 document.getElementById('message-textarea')
     .addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
-            sendChat();
+            // Translate typed message
+            translateMessage();
+
             if(e.preventDefault) e.preventDefault(); // prevent new line
             return false; // Just a workaround for old browsers
         }
@@ -158,17 +127,19 @@ client.loginImplicitGrant(
     currentConversationId = stateData.conversationId;
     genesysCloudLanguage = stateData.language;
     
+    // Get messageId
     return conversationsApi.getConversationsEmail(currentConversationId);
 }).then(data => {
     console.log(data);
 
     messageId = data.participants.find(p => p.purpose == 'customer').messageId;
 
+    // Get email details
     return conversationsApi.getConversationsEmailMessage(currentConversationId, messageId);
 }).then((data) => { 
     console.log(data);
 
-    return getEmailBody(data);
+    return getEmailDetails(data);
 }).then(data => {
     console.log('Finished Setup');
 
