@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="./styles/style.css">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
+    <link href="./styles/all.css" rel="stylesheet">
     <script src="https://sdk-cdn.mypurecloud.com/javascript/latest/purecloud-platform-client-v2.min.js"></script>
     <script type="module" src="./scripts/main.js"></script>
   </head>
@@ -23,7 +23,10 @@
           <form id="chat-form" name="message">
             <textarea id="message-textarea" class="message-input form-control acd-chat-reply-textarea chat-text" spellcheck="true"></textarea>
           </form>
-          <div class="bottom-chat-box"></div>
+          <div class="bottom-chat-box">
+            <button id="btn-copy" title="Copy" type="button" class="btn-light"><i class="far fa-copy"></i></button>
+            <button id="btn-send" title="Translate and Send" type="button" class="btn"><i class="fas fa-paper-plane"></i></button>
+          </div>
         </div>
       </div>
     </div>

@@ -28,16 +28,67 @@ function getEmailDetails(data){
     agentName = data.to[0].name;
     subject = data.subject;
 
-    translate.translateText(emailBody, genesysCloudLanguage, function(translatedData) {
-        console.log('TRANSLATED DATA: ' + JSON.stringify(translatedData));
-
-        view.addMessage(translatedData.translated_text, 'customer');
+    translateMessage(emailBody, genesysCloudLanguage, 'customer')
+    .then((translatedData) => {
         translationData = translatedData;
     });
 }
 
-function translateMessage(){
+function translateMessage(message, language, purpose){
+    return new Promise((resolve, reject) => {
+        translate.translateText(message, language, function(data) {
+            if (data) {
+                console.log('TRANSLATED DATA: ' + JSON.stringify(data));
+
+                view.addMessage(data.translated_text, purpose);
+                resolve(data);
+            }
+        });
+    });
+}
+
+function sendMessage(){
     let message = document.getElementById('message-textarea').value;
+
+    translateMessage(message, getSourceLanguage(), 'agent')
+    .then((translatedData) => {
+        let body = {
+            'to': [{
+                'email': customerEmail,
+                'name': customerName
+            }],
+            'from': {
+                'email': agentEmail,
+                'name': agentName
+            },
+            'subject': subject,
+            'textBody': translatedData.translated_text,
+            'historyIncluded': true
+        }
+    
+        conversationsApi.postConversationsEmailMessages(currentConversationId, body);
+
+        console.log('Translated email sent to customer!');
+    });    
+}
+
+function copyToClipboard(){
+    let message = document.getElementById('message-textarea').value;
+
+    translateMessage(message, getSourceLanguage(), 'agent')
+    .then((translatedData) => {
+        var dummy = document.createElement('textarea');
+        document.body.appendChild(dummy);
+        dummy.value = translatedData.translated_text;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+
+        console.log('Translated message copied to clipboard!');
+    });
+}
+
+function getSourceLanguage(){
     let sourceLang;
 
     // Default language to english if no source_language available    
@@ -47,61 +98,17 @@ function translateMessage(){
         sourceLang = translationData.source_language;
     }
 
-    translate.translateText(message, sourceLang, function(translatedData) {
-        console.log('TRANSLATED DATA: ' + JSON.stringify(translatedData));
-
-        view.addMessage(translatedData.translated_text, 'agent');
-
-        // Send email
-        sendMessage(translatedData.translated_text, () => {
-            console.log('EMAIL SENT');
-        });
-
-        // Copy to clipboard
-        // copyToClipboard(translatedData.translated_text);
-    });
-}
-
-function sendMessage(message){
-    let body = {
-        'to': [{
-            'email': customerEmail,
-            'name': customerName
-        }],
-        'from': {
-            'email': agentEmail,
-            'name': agentName
-        },
-        'subject': subject,
-        'textBody': message,
-        'historyIncluded': true
-    }
-
-    conversationsApi.postConversationsEmailMessages(currentConversationId, body);
-}
-
-function copyToClipboard(message){
-    var dummy = document.createElement("textarea");
-    document.body.appendChild(dummy);
-    dummy.value = message;
-    dummy.select();
-    document.execCommand("copy");
-    document.body.removeChild(dummy);
+    return sourceLang;
 }
 
 /** --------------------------------------------------------------
  *                       EVENT HANDLERS
  * -------------------------------------------------------------- */
-document.getElementById('message-textarea')
-    .addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            // Translate typed message
-            translateMessage();
+document.getElementById('btn-send')
+    .addEventListener('click', () => sendMessage());
 
-            if(e.preventDefault) e.preventDefault(); // prevent new line
-            return false; // Just a workaround for old browsers
-        }
-    });
+document.getElementById('btn-copy')
+    .addEventListener('click', () => copyToClipboard());
 
 /** --------------------------------------------------------------
  *                       INITIAL SETUP

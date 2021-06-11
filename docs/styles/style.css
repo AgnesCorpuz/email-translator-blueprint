@@ -32,6 +32,23 @@ a:hover{
     text-decoration: underline;
 }
 
+.btn {
+    height: 40px;
+    width: 50px;
+    background-color: #23395D;
+    color: #FDFDFD;
+    margin-bottom: 5px;
+}
+
+.btn-light {
+    height: 40px;
+    width: 50px;
+    background-color: #FDFDFD;
+    color: #23395D;
+    margin-bottom: 5px;
+    border: 1px solid #23395D;
+}
+
 .chat-message {
     background-color: #F2F2F2;
     border-radius: 5px;
@@ -123,9 +140,9 @@ a:hover{
     justify-content: flex-end;
     align-items: center;
     font-size: 11px;
-    height: 20px;
+    height: 40px;
     min-height: 20px;
-    max-height: 20px;
+    /* max-height: 20px; */
     padding-top: 2px;
     color: #999999;
 }

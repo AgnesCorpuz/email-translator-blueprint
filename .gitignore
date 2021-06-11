@@ -1,3 +1,4 @@
 node_modules/*
 docs/scripts/config.js
 .env
+package-lock.json
