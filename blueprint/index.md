@@ -4,7 +4,7 @@ author: agnes.corpuz
 indextype: blueprint
 icon: blueprint
 image: images/flowchart.png
-category: 6
+category: 5
 summary: |
   This Genesys Cloud Developer Blueprint provides instructions for building an email translation assistant which uses the AWS Translate service to allow customers and agents to email in their preferred languages. The email translation assistant automatically translates everything in the interaction window in real-time.
 ---
