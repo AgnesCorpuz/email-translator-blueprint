@@ -1,15 +1,15 @@
 ---
-title: Build a chat translation assistant with the AWS Translate service
+title: Build an email translation assistant with the AWS Translate service
 author: agnes.corpuz
 indextype: blueprint
 icon: blueprint
 image: images/flowchart.png
 category: 6
 summary: |
-  This Genesys Cloud Developer Blueprint provides instructions for building an email translation assistant which uses the AWS Translate service to allow customers and agents to chat in their preferred languages. The chat translation assistant automatically translates everything in the interaction window in real-time.
+  This Genesys Cloud Developer Blueprint provides instructions for building an email translation assistant which uses the AWS Translate service to allow customers and agents to email in their preferred languages. The email translation assistant automatically translates everything in the interaction window in real-time.
 ---
 
-This Genesys Cloud Developer Blueprint provides instructions for building an email translation assistant which uses the AWS Translate service to allow customers and agents to chat in their preferred languages. The chat translation assistant automatically translates everything in the interaction window in real-time.
+This Genesys Cloud Developer Blueprint provides instructions for building an email translation assistant which uses the AWS Translate service to allow customers and agents to email in their preferred languages. The email translation assistant automatically translates everything in the interaction window in real-time.
 
 ![Email translation assistant](images/flowchart.png "Email translation assistant")
 
@@ -57,6 +57,7 @@ This Genesys Cloud Developer Blueprint provides instructions for building an ema
 * [Set up AWS Translate](#set-up-aws-translate "Goes to the Set up AWS Translate section")
 * [Install and activate the Email Translator in Genesys Cloud](#install-and-activate-the-email-translator-in-genesys-cloud "Goes to the Install and activate the Email Translator in Genesys Cloud section")
 * [Host and run the Node.js app server](#host-and-run-the-node-js-app-server "Goes to the Host and run the Node.js app server section")
+* [Setup email interaction](#setup-email-interaction "Goes to the Setup email interaction section")
 * [Test the solution](#test-the-solution "Goes to the Test the solution section")
 
 ### Download the repository containing the project files
@@ -153,10 +154,15 @@ This Genesys Cloud Developer Blueprint provides instructions for building an ema
 2. To answer the email as an agent, in your Genesys Cloud organization change your status to **On Queue** and then answer the incoming interaction.
   ![Email interaction](images/email-interaction.png "Incoming email interaction")
 3. To open the Email Translator, click the **Email Translator** button, which appears in the agent's toolbar.
-4. Practice sending and receiving chats in different languages. When you type a chat, the Chat Translator automatically translates it into the language that the customer is using.
-  ![Translated chat](images/chat-translate.png "Translated chat")
-5. To send a translated canned response, click **Open Canned Responses** and select a canned response.  
-  ![Translated canned response](images/translate-canned-response.png "Translated canned response")
+4. Upon loading the Email Translator, the agent can see a message bubble with the translated message from the customer.
+  
+  :::primary
+  **Tip**: The **Copy** button translates the agent's response to the customer's language and adds the translated message in the clipboard. The agent can then paste the translated message in the email response window before sending the message.
+
+  The **Send** button automatically sends the agent's translated message to the customer and ends the interaction.
+  :::
+
+  ![Translated email](images/email-translate.png "Translated email")
 
 ## Additional resources
 
