@@ -67,7 +67,7 @@ This Genesys Cloud Developer Blueprint provides instructions for building an ema
 ### Create a token implicit OAuth grant for Genesys Cloud
 
 1. Log in to your Genesys Cloud organization and create a new OAuth client that uses the Token Implicit Grant (Browser) type. For more information, see [Create an OAuth client](https://help.mypurecloud.com/articles/?p=188023 "Opens the Create an OAuth client article") in the Genesys Cloud Resource Center.
-2. In your local blueprint repository, open the [config.js](https://github.com/GenesysCloudBlueprints/email-translator-blueprint/blob/main/docs/scripts/config.js) file. Add the client ID from your OAuth client and specify the region where your Genesys Cloud organization is located, for example, `mypurecloud.ie` or `mypurecloud.com.au`.
+2. In your local blueprint repository, open the [config.js](https://github.com/AgnesCorpuz/email-translator-blueprint/blob/main/docs/scripts/config.js) file. Add the client ID from your OAuth client and specify the region where your Genesys Cloud organization is located, for example, `mypurecloud.ie` or `mypurecloud.com.au`.
 
 ### Set up AWS Translate
 
@@ -151,6 +151,7 @@ This Genesys Cloud Developer Blueprint provides instructions for building an ema
 ### Test the solution
 
 1. To start an email interaction as a customer, send an email to your configured email address.
+   ![Send email](images/send-email.png "Send email")
 2. To answer the email as an agent, in your Genesys Cloud organization change your status to **On Queue** and then answer the incoming interaction.
   ![Email interaction](images/email-interaction.png "Incoming email interaction")
 3. To open the Email Translator, click the **Email Translator** button, which appears in the agent's toolbar.
